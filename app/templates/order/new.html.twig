@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Заказать услугу оценки{% endblock %}
+
+{% block body %}
+    <h1>Заказать услугу оценки</h1>
+
+    {% for message in app.flashes('success') %}
+        <div style="color: #166534; margin-bottom: 12px;">{{ message }}</div>
+    {% endfor %}
+
+    <div style="margin-bottom: 12px;">
+        Вы авторизованы как {{ app.user.userIdentifier }}.
+        <a href="{{ path('app_logout') }}">Выйти</a>
+    </div>
+
+    {{ form_start(orderForm) }}
+        {{ form_row(orderForm.service, { attr: { 'data-service-select': 'true' } }) }}
+        {{ form_row(orderForm.email) }}
+
+        <div style="margin: 12px 0;">
+            <strong>Стоимость:</strong>
+            <span id="service-price">0 р.</span>
+        </div>
+
+        <button type="submit">Подтвердить</button>
+    {{ form_end(orderForm) }}
+
+    <script>
+        (() => {
+            const prices = {{ services|json_encode|raw }};
+            const select = document.querySelector('[data-service-select="true"]');
+            const priceNode = document.getElementById('service-price');
+
+            const updatePrice = () => {
+                if (!select || !priceNode) {
+                    return;
+                }
+
+                const price = prices[select.value] ?? 0;
+                priceNode.textContent = `${price} р.`;
+            };
+
+            if (select) {
+                select.addEventListener('change', updatePrice);
+                updatePrice();
+            }
+        })();
+    </script>
+{% endblock %}

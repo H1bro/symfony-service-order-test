@@ -36,12 +36,5 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-  composer:
-    image: composer:2
-    container_name: symfony_composer
-    working_dir: /var/www
-    volumes:
-      - ./:/var/www
-
 volumes:
   mysql_data:

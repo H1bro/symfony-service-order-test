@@ -1,6 +1,6 @@
 DC = docker compose
 
-.PHONY: build up down restart logs bash php init install deps migrate seed test cs
+.PHONY: build up down restart logs bash install db-create db-drop db-reset migrate migrate-test test
 
 build:
 	$(DC) build
@@ -20,25 +20,22 @@ logs:
 bash:
 	$(DC) exec php bash
 
-php:
-	$(DC) exec php sh
-
-init:
-	$(DC) run --rm composer create-project symfony/skeleton app
-	$(DC) run --rm composer sh -lc "cd app && composer require webapp doctrine orm maker security validator" 
-	$(DC) run --rm composer sh -lc "cd app && composer require --dev symfony/test-pack"
-
 install:
-	$(DC) run --rm composer sh -lc "cd app && composer install"
+	$(DC) exec php sh -lc "cd app && composer install"
 
-deps:
-	$(DC) run --rm composer sh -lc "cd app && composer require webapp doctrine orm maker security validator"
+db-create:
+	$(DC) exec php sh -lc "cd app && php bin/console doctrine:database:create --if-not-exists"
+
+db-drop:
+	$(DC) exec php sh -lc "cd app && php bin/console doctrine:database:drop --if-exists --force"
+
+db-reset: db-drop db-create migrate
 
 migrate:
 	$(DC) exec php sh -lc "cd app && php bin/console doctrine:migrations:migrate --no-interaction"
 
-seed:
-	$(DC) exec php sh -lc "cd app && php bin/console doctrine:migrations:migrate --no-interaction"
+migrate-test:
+	$(DC) exec php sh -lc "cd app && APP_ENV=test php bin/console doctrine:migrations:migrate --no-interaction"
 
-test:
-	$(DC) exec php sh -lc "cd app && php bin/phpunit"
+test: migrate-test
+	$(DC) exec php sh -lc "cd app && APP_ENV=test php bin/phpunit"

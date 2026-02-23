@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Вход{% endblock %}
+
+{% block body %}
+    <h1>Вход</h1>
+
+    {% if error %}
+        <div style="color: #b91c1c; margin-bottom: 12px;">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+
+    <form method="post">
+        <label for="username">Email</label>
+        <input type="email" value="{{ last_username }}" name="_username" id="username" autocomplete="email" required autofocus>
+
+        <label for="password">Пароль</label>
+        <input type="password" name="_password" id="password" autocomplete="current-password" required>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button type="submit">Войти</button>
+    </form>
+{% endblock %}
