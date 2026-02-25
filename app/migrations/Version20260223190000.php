@@ -33,8 +33,9 @@ final class Version20260223190000 extends AbstractMigration
 
         $seedUsersSql = <<<'SQL'
 INSERT INTO user (email, roles, password) VALUES
-('user1@example.com', '["ROLE_USER"]', '$2y$10$5SggCzFMHkbwVxFrSPzZKeLqRvJe1NGaH1CBSW50LlPiwXnvRTDu.'),
-('user2@example.com', '["ROLE_USER"]', '$2y$10$a/ht7FtmYR.1zHGI/EJ04uWl2ghLux5KCdvVQSl1DkGMAkD6/7MXa')
+('user1@example.com', '["ROLE_USER","ROLE_ORDER_CREATE"]', '$2y$10$5SggCzFMHkbwVxFrSPzZKeLqRvJe1NGaH1CBSW50LlPiwXnvRTDu.'),
+('user2@example.com', '["ROLE_USER","ROLE_ORDER_CREATE"]', '$2y$10$a/ht7FtmYR.1zHGI/EJ04uWl2ghLux5KCdvVQSl1DkGMAkD6/7MXa'),
+('limited_user@example.com', '["ROLE_VIEWER"]', '$2y$10$5SggCzFMHkbwVxFrSPzZKeLqRvJe1NGaH1CBSW50LlPiwXnvRTDu.')
 SQL;
 
         $this->addSql($seedUsersSql);

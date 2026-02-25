@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Application\Order\PlaceOrderHandler;
+use App\Dto\PlaceOrderCommand;
 use App\Entity\Order;
 use App\Entity\User;
 use App\Form\OrderType;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,22 +24,22 @@ class OrderController extends AbstractController
     }
 
     #[Route('/order', name: 'app_order_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, PlaceOrderHandler $placeOrderHandler): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_ORDER_CREATE');
 
         $order = new Order();
         $form = $this->createForm(OrderType::class, $order);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $service = $order->getService();
-            $order->setPrice(Order::SERVICES[$service] ?? 0);
-            $order->setCreatedAt(new \DateTimeImmutable());
-            $order->setCreatedBy($this->getUserEntity());
-
-            $entityManager->persist($order);
-            $entityManager->flush();
+            $placeOrderHandler->handle(
+                new PlaceOrderCommand(
+                    $order->getService(),
+                    $order->getEmail(),
+                    $this->getUserEntity(),
+                ),
+            );
 
             $this->addFlash('success', 'Заказ успешно сохранен.');
 

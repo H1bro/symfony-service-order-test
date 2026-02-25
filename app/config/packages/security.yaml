@@ -28,7 +28,7 @@ security:
                 target: app_login
 
     access_control:
-        - { path: ^/order, roles: ROLE_USER }
+        - { path: ^/order, roles: ROLE_ORDER_CREATE }
 
 when@test:
     security:

@@ -14,8 +14,9 @@
         <a href="{{ path('app_logout') }}">Выйти</a>
     </div>
 
+    <div id="order-form-data" data-services="{{ services|json_encode|e('html_attr') }}">
     {{ form_start(orderForm) }}
-        {{ form_row(orderForm.service, { attr: { 'data-service-select': 'true' } }) }}
+        {{ form_row(orderForm.service) }}
         {{ form_row(orderForm.email) }}
 
         <div style="margin: 12px 0;">
@@ -25,11 +26,13 @@
 
         <button type="submit">Подтвердить</button>
     {{ form_end(orderForm) }}
+    </div>
 
     <script>
         (() => {
-            const prices = {{ services|json_encode|raw }};
-            const select = document.querySelector('[data-service-select="true"]');
+            const dataNode = document.getElementById('order-form-data');
+            const prices = JSON.parse(dataNode?.dataset.services ?? '{}');
+            const select = document.getElementById('order_service');
             const priceNode = document.getElementById('service-price');
 
             const updatePrice = () => {

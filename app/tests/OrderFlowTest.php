@@ -18,6 +18,7 @@ final class OrderFlowTest extends WebTestCase
         $client = static::createClient();
         $client->request('GET', '/order');
 
+        self::assertResponseStatusCodeSame(302);
         self::assertResponseRedirects('/login');
     }
 
@@ -33,6 +34,16 @@ final class OrderFlowTest extends WebTestCase
         self::assertSelectorExists('input[name="order[email]"]');
         self::assertSelectorExists('button[type="submit"]');
         self::assertStringContainsString('Подтвердить', $crawler->filter('button[type="submit"]')->text());
+    }
+
+    public function testAuthorizedUserWithoutCreateRoleGetsForbidden(): void
+    {
+        $client = static::createClient();
+        $client->loginUser($this->getOrCreateLimitedUser());
+
+        $client->request('GET', '/order');
+
+        self::assertResponseStatusCodeSame(403);
     }
 
     public function testInvalidOrderSubmissionShowsValidationErrors(): void
@@ -81,6 +92,15 @@ final class OrderFlowTest extends WebTestCase
 
         self::assertNotNull($user);
 
+        if (!in_array('ROLE_ORDER_CREATE', $user->getRoles(), true)) {
+            $roles = $user->getRoles();
+            $roles[] = 'ROLE_ORDER_CREATE';
+            $user->setRoles(array_values(array_unique($roles)));
+
+            $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+            $entityManager->flush();
+        }
+
         return $user;
     }
 
@@ -98,5 +118,26 @@ final class OrderFlowTest extends WebTestCase
     private function getOrderRepository(): OrderRepository
     {
         return static::getContainer()->get(OrderRepository::class);
+    }
+
+    private function getOrCreateLimitedUser(): User
+    {
+        $repository = static::getContainer()->get(UserRepository::class);
+        $user = $repository->findOneBy(['email' => 'limited_user@example.com']);
+
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        $user = (new User())
+            ->setEmail('limited_user@example.com')
+            ->setRoles(['ROLE_VIEWER'])
+            ->setPassword('$2y$10$5SggCzFMHkbwVxFrSPzZKeLqRvJe1NGaH1CBSW50LlPiwXnvRTDu.');
+
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
     }
 }
